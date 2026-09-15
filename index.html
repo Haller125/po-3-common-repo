@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flappy Bird</title>
+  <meta name="description" content="A beautiful Flappy Bird game built with HTML5 Canvas and JavaScript.">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-wrapper" id="gameWrapper">
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="score-display" id="scoreDisplay" style="display:none;">0</div>
+
+    <!-- Start Screen -->
+    <div class="overlay active" id="startScreen">
+      <div class="title">Flappy Bird</div>
+      <div class="subtitle">Navigate through the pipes!</div>
+      <button class="btn" id="startBtn">Play</button>
+      <div class="instructions">Press SPACE or Click to flap</div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div class="overlay" id="gameOverScreen" style="display:none;">
+      <div class="medal" id="medal"></div>
+      <div class="title" style="font-size:40px;">Game Over</div>
+      <div class="game-over-score" id="finalScore">Score: 0</div>
+      <div class="game-over-best" id="bestScore">Best: 0</div>
+      <button class="btn" id="restartBtn">Play Again</button>
+      <div class="instructions">Press SPACE or Click to restart</div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
