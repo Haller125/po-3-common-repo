@@ -107,6 +107,88 @@ canvas {
   border: 1px solid rgba(255,255,255,0.08);
 }
 
+.shop-panel {
+  width: 100%;
+  padding: 12px 12px 8px;
+  margin-bottom: 18px;
+  border-radius: 16px;
+  background: rgba(12, 25, 41, 0.42);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.shop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #f7d66d;
+  margin-bottom: 8px;
+}
+
+.shop-coin-count {
+  color: #fff4b5;
+  font-size: 14px;
+}
+
+.shop-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  margin-bottom: 8px;
+}
+
+.shop-item:last-child {
+  margin-bottom: 0;
+}
+
+.shop-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.shop-item-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.shop-item-meta {
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+}
+
+.shop-buy {
+  min-width: 58px;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffd166, #f39c12);
+  color: #1f1f1f;
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.shop-buy:hover {
+  transform: translateY(-1px);
+}
+
+.shop-buy:disabled {
+  cursor: default;
+  opacity: 0.5;
+  transform: none;
+}
+
 .menu-row {
   display: flex;
   justify-content: space-between;
@@ -188,6 +270,101 @@ canvas {
   box-shadow:
     0 2px 0 #1f5ea8,
     0 4px 15px rgba(0,0,0,0.3);
+}
+
+.shop-card {
+  width: min(330px, 82%);
+  padding: 18px 16px 14px;
+  border-radius: 24px;
+  background: rgba(16, 29, 48, 0.5);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.22);
+  backdrop-filter: blur(8px);
+}
+
+.shop-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.small-title {
+  font-size: 36px;
+  margin-bottom: 0;
+}
+
+.shop-close {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.shop-balance-panel {
+  margin-bottom: 14px;
+}
+
+.shop-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  margin-bottom: 10px;
+}
+
+.shop-item:last-child {
+  margin-bottom: 0;
+}
+
+.shop-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.shop-item-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.shop-item-meta {
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+}
+
+.shop-buy {
+  min-width: 58px;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffd166, #f39c12);
+  color: #1f1f1f;
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.shop-buy:hover {
+  transform: translateY(-1px);
+}
+
+.shop-buy:disabled {
+  cursor: default;
+  opacity: 0.5;
+  transform: none;
 }
 
 .score-display {

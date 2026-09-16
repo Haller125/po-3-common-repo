@@ -37,8 +37,56 @@
         </div>
 
         <button class="btn" id="startBtn">Play</button>
+        <button class="btn btn-secondary" id="shopBtn">Shop</button>
       </div>
       <div class="instructions">Press SPACE or Click to flap</div>
+    </div>
+
+    <!-- Shop Screen -->
+    <div class="overlay" id="shopScreen" style="display:none;">
+      <div class="shop-card">
+        <div class="shop-title-row">
+          <div class="title small-title">Shop</div>
+          <button class="shop-close" id="closeShopBtn">Back</button>
+        </div>
+
+        <div class="score-panel shop-balance-panel">
+          <div class="score-panel-label">Coins</div>
+          <div class="score-panel-value" id="shopCoins">0</div>
+        </div>
+
+        <div class="shop-item">
+          <div class="shop-item-info">
+              <div class="shop-item-name">Red Bird</div>
+              <div class="shop-item-meta">Color skin</div>
+          </div>
+            <button class="shop-buy" data-skin="red">50</button>
+        </div>
+
+        <div class="shop-item">
+          <div class="shop-item-info">
+              <div class="shop-item-name">Blue Bird</div>
+              <div class="shop-item-meta">Color skin</div>
+          </div>
+            <button class="shop-buy" data-skin="blue">50</button>
+        </div>
+
+        <div class="shop-item">
+          <div class="shop-item-info">
+              <div class="shop-item-name">Green Bird</div>
+              <div class="shop-item-meta">Color skin</div>
+          </div>
+            <button class="shop-buy" data-skin="green">50</button>
+        </div>
+        
+          <div class="shop-item">
+            <div class="shop-item-info">
+              <div class="shop-item-name">Bird with Hat</div>
+              <div class="shop-item-meta">Special skin</div>
+            </div>
+            <button class="shop-buy" data-skin="hat">50</button>
+          </div>
+      </div>
     </div>
 
     <!-- Game Over Screen -->
