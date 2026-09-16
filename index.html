@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flappy Bird</title>
+  <title>Flappy Bird 0.1</title>
   <meta name="description" content="A beautiful Flappy Bird game built with HTML5 Canvas and JavaScript.">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -16,10 +16,109 @@
 
     <!-- Start Screen -->
     <div class="overlay active" id="startScreen">
-      <div class="title">Flappy Bird</div>
-      <div class="subtitle">Navigate through the pipes!</div>
-      <button class="btn" id="startBtn">Play</button>
+      <div class="menu-card">
+        <div class="title">Flappy Bird</div>
+        <div class="subtitle">Navigate through the pipes!</div>
+
+        <div class="score-panel">
+          <div class="score-panel-label">Best Score</div>
+          <div class="score-panel-value" id="startBestScore">0</div>
+        </div>
+
+        <div class="menu-panel">
+          <div class="menu-row">
+            <span class="menu-label">Jump</span>
+            <span class="menu-key">SPACE</span>
+          </div>
+          <div class="menu-row">
+            <span class="menu-label">Restart</span>
+            <span class="menu-key">CLICK</span>
+          </div>
+        </div>
+
+        <button class="btn" id="startBtn">Play</button>
+        <button class="btn btn-secondary" id="shopBtn">Shop</button>
+      </div>
       <div class="instructions">Press SPACE or Click to flap</div>
+    </div>
+
+    <!-- Shop Screen -->
+    <div class="overlay" id="shopScreen" style="display:none;">
+      <div class="shop-card">
+        <div class="shop-title-row">
+          <div class="title small-title">Shop</div>
+          <button class="shop-close" id="closeShopBtn">Back</button>
+        </div>
+
+        <div class="score-panel shop-balance-panel">
+          <div class="score-panel-label">Coins</div>
+          <div class="score-panel-value" id="shopCoins">0</div>
+        </div>
+
+        <div class="shop-item">
+          <div class="shop-item-info">
+              <div class="shop-item-name">Red Bird</div>
+              <div class="shop-item-meta">Color skin</div>
+          </div>
+            <button class="shop-buy" data-skin="red">50</button>
+        </div>
+
+        <div class="shop-item">
+          <div class="shop-item-info">
+              <div class="shop-item-name">Blue Bird</div>
+              <div class="shop-item-meta">Color skin</div>
+          </div>
+            <button class="shop-buy" data-skin="blue">50</button>
+        </div>
+
+        <div class="shop-item">
+          <div class="shop-item-info">
+              <div class="shop-item-name">Green Bird</div>
+              <div class="shop-item-meta">Color skin</div>
+          </div>
+            <button class="shop-buy" data-skin="green">50</button>
+        </div>
+        
+          <div class="shop-item">
+            <div class="shop-item-info">
+              <div class="shop-item-name">Bird with Hat</div>
+              <div class="shop-item-meta">Special skin</div>
+            </div>
+            <button class="shop-buy" data-skin="hat">60</button>
+          </div>
+
+          <div class="shop-item">
+            <div class="shop-item-info">
+              <div class="shop-item-name">Bird with Cap</div>
+              <div class="shop-item-meta">Sport skin</div>
+            </div>
+            <button class="shop-buy" data-skin="cap">75</button>
+          </div>
+
+          <div class="shop-item">
+            <div class="shop-item-info">
+              <div class="shop-item-name">Bird with Crown</div>
+              <div class="shop-item-meta">Royal skin</div>
+            </div>
+            <button class="shop-buy" data-skin="crown">100</button>
+          </div>
+
+          <div class="shop-item">
+            <div class="shop-item-info">
+              <div class="shop-item-name">Wizard Bird</div>
+              <div class="shop-item-meta">Magic skin</div>
+            </div>
+            <button class="shop-buy" data-skin="wizard">125</button>
+          </div>
+
+          <div class="shop-item">
+            <div class="shop-item-info">
+              <div class="shop-item-name">Golden Bird</div>
+              <div class="shop-item-meta">Legendary skin</div>
+            </div>
+            <button class="shop-buy" data-skin="gold">999</button>
+          </div>
+      </div>
     </div>
 
     <!-- Game Over Screen -->
@@ -29,6 +128,7 @@
       <div class="game-over-score" id="finalScore">Score: 0</div>
       <div class="game-over-best" id="bestScore">Best: 0</div>
       <button class="btn" id="restartBtn">Play Again</button>
+      <button class="btn btn-secondary" id="menuBtn">Main Menu</button>
       <div class="instructions">Press SPACE or Click to restart</div>
     </div>
   </div>
