@@ -16,9 +16,28 @@
 
     <!-- Start Screen -->
     <div class="overlay active" id="startScreen">
-      <div class="title">Flappy Bird</div>
-      <div class="subtitle">Navigate through the pipes!</div>
-      <button class="btn" id="startBtn">Play</button>
+      <div class="menu-card">
+        <div class="title">Flappy Bird</div>
+        <div class="subtitle">Navigate through the pipes!</div>
+
+        <div class="score-panel">
+          <div class="score-panel-label">Best Score</div>
+          <div class="score-panel-value" id="startBestScore">0</div>
+        </div>
+
+        <div class="menu-panel">
+          <div class="menu-row">
+            <span class="menu-label">Jump</span>
+            <span class="menu-key">SPACE</span>
+          </div>
+          <div class="menu-row">
+            <span class="menu-label">Restart</span>
+            <span class="menu-key">CLICK</span>
+          </div>
+        </div>
+
+        <button class="btn" id="startBtn">Play</button>
+      </div>
       <div class="instructions">Press SPACE or Click to flap</div>
     </div>
 
@@ -29,6 +48,7 @@
       <div class="game-over-score" id="finalScore">Score: 0</div>
       <div class="game-over-best" id="bestScore">Best: 0</div>
       <button class="btn" id="restartBtn">Play Again</button>
+      <button class="btn btn-secondary" id="menuBtn">Main Menu</button>
       <div class="instructions">Press SPACE or Click to restart</div>
     </div>
   </div>

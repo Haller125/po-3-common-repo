@@ -15,6 +15,8 @@ const bestScoreEl = document.getElementById('bestScore');
 const medalEl = document.getElementById('medal');
 const startBtn = document.getElementById('startBtn');
 const restartBtn = document.getElementById('restartBtn');
+const menuBtn = document.getElementById('menuBtn');
+const startBestScoreEl = document.getElementById('startBestScore');
 
 // ── Game State ──
 const STATES = { MENU: 0, PLAYING: 1, DEAD: 2 };
@@ -22,6 +24,13 @@ let state = STATES.MENU;
 let score = 0;
 let bestScore = parseInt(localStorage.getItem('flappyBest') || '0');
 let frameCount = 0;
+let flashAlpha = 0;
+let flashColor = '#ffffff';
+
+function triggerFlash(color = '#ffffff', intensity = 0.8) {
+  flashColor = color;
+  flashAlpha = Math.max(flashAlpha, intensity);
+}
 
 // ── Colors ──
 const SKY_TOP = '#4ec5f1';
@@ -309,29 +318,29 @@ function drawGround() {
 let particles = [];
 
 function spawnScoreParticle() {
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 14; i++) {
     particles.push({
       x: bird.x + 10,
       y: bird.y - 20,
-      vx: (Math.random() - 0.5) * 4,
-      vy: -2 - Math.random() * 3,
+      vx: (Math.random() - 0.5) * 6,
+      vy: -2 - Math.random() * 5,
       alpha: 1,
-      size: 3 + Math.random() * 4,
-      color: ['#ffe082', '#ffcc02', '#fff176', '#ffee58'][Math.floor(Math.random() * 4)]
+      size: 3 + Math.random() * 6,
+      color: ['#ffe082', '#ffcc02', '#fff176', '#ffee58', '#ffffff'][Math.floor(Math.random() * 5)]
     });
   }
 }
 
 function spawnDeathParticles() {
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 24; i++) {
     particles.push({
       x: bird.x,
       y: bird.y,
-      vx: (Math.random() - 0.5) * 8,
-      vy: (Math.random() - 0.5) * 8,
+      vx: (Math.random() - 0.5) * 9,
+      vy: (Math.random() - 0.5) * 9,
       alpha: 1,
-      size: 3 + Math.random() * 5,
-      color: ['#ffe135', '#f5a623', '#e74c3c', '#fff'][Math.floor(Math.random() * 4)]
+      size: 3 + Math.random() * 6,
+      color: ['#ffe135', '#f5a623', '#e74c3c', '#fff', '#ffd166'][Math.floor(Math.random() * 5)]
     });
   }
 }
@@ -409,14 +418,22 @@ function startGame() {
   spawnPipe();
 }
 
+function updateBestScoreUI() {
+  const val = Number(bestScore) || 0;
+  bestScoreEl.textContent = `Best: ${val}`;
+  if (startBestScoreEl) startBestScoreEl.textContent = String(val);
+}
+
 function gameOver() {
   state = STATES.DEAD;
   shakeAmount = 12;
+  triggerFlash('#ff5f57', 0.9);
   spawnDeathParticles();
 
   if (score > bestScore) {
     bestScore = score;
     localStorage.setItem('flappyBest', bestScore);
+    updateBestScoreUI();
   }
 
   setTimeout(() => {
@@ -469,6 +486,24 @@ canvas.addEventListener('touchstart', (e) => {
 
 startBtn.addEventListener('click', () => { startGame(); bird.flap(); });
 restartBtn.addEventListener('click', () => { startGame(); bird.flap(); });
+menuBtn.addEventListener('click', () => {
+  state = STATES.MENU;
+  score = 0;
+  pipes = [];
+  particles = [];
+  bird.reset();
+  frameCount = 0;
+  shakeAmount = 0;
+
+  startScreen.classList.add('active');
+  startScreen.style.display = 'flex';
+  gameOverScreen.style.display = 'none';
+  gameOverScreen.classList.remove('active');
+  scoreDisplay.style.display = 'none';
+  updateBestScoreUI();
+});
+
+updateBestScoreUI();
 
 // ── Menu Animation ──
 let menuBobTime = 0;
@@ -523,6 +558,7 @@ function gameLoop() {
         scoreDisplay.textContent = score;
         scoreDisplay.classList.add('pop');
         setTimeout(() => scoreDisplay.classList.remove('pop'), 100);
+        triggerFlash('#fff2a8', 0.5);
         spawnScoreParticle();
       }
     });
@@ -562,6 +598,15 @@ function gameLoop() {
   }
 
   drawGround();
+
+  if (flashAlpha > 0) {
+    ctx.fillStyle = flashColor;
+    ctx.globalAlpha = flashAlpha;
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+    flashAlpha *= 0.72;
+    if (flashAlpha < 0.02) flashAlpha = 0;
+  }
 
   ctx.restore();
 
