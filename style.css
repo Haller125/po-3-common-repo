@@ -274,12 +274,31 @@ canvas {
 
 .shop-card {
   width: min(330px, 82%);
+  max-height: calc(100vh - 32px);
+  box-sizing: border-box;
   padding: 18px 16px 14px;
   border-radius: 24px;
   background: rgba(16, 29, 48, 0.5);
   border: 1px solid rgba(255,255,255,0.12);
   box-shadow: 0 18px 40px rgba(0,0,0,0.22);
   backdrop-filter: blur(8px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.45) transparent;
+}
+
+.shop-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.shop-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.shop-card::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(255,255,255,0.45);
 }
 
 .shop-title-row {

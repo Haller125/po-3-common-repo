@@ -59,13 +59,51 @@ const SKINS = {
     bodyTop: '#f7d387',
     bodyBottom: '#f39c12',
     wing: '#fce4b2',
-    hasHat: true
+    hatStyle: 'hat',
+    cost: 60
+  },
+  cap: {
+    name: 'Bird with Cap',
+    bodyTop: '#ff9a9e',
+    bodyBottom: '#f6416c',
+    wing: '#ffc1c7',
+    hatStyle: 'cap',
+    cost: 75
+  },
+  crown: {
+    name: 'Bird with Crown',
+    bodyTop: '#fff09b',
+    bodyBottom: '#f6c445',
+    wing: '#fff5bd',
+    hatStyle: 'crown',
+    cost: 100
+  },
+  wizard: {
+    name: 'Wizard Bird',
+    bodyTop: '#c5a3ff',
+    bodyBottom: '#7048c6',
+    wing: '#dfccff',
+    hatStyle: 'wizard',
+    cost: 125
+  },
+  gold: {
+    name: 'Golden Bird',
+    bodyTop: '#fff6a3',
+    bodyBottom: '#d99b00',
+    wing: '#ffe27a',
+    cost: 999
   }
 };
 let state = STATES.MENU;
 let score = 0;
 let bestScore = parseInt(localStorage.getItem('flappyBest') || '0');
 let totalCoins = parseInt(localStorage.getItem('flappyCoins') || '0');
+const BONUS_COINS_KEY = 'flappyBonus999Granted';
+if (!localStorage.getItem(BONUS_COINS_KEY)) {
+  totalCoins += 999;
+  localStorage.setItem('flappyCoins', String(totalCoins));
+  localStorage.setItem(BONUS_COINS_KEY, 'true');
+}
 let ownedSkins = ['classic'];
 let selectedSkin = localStorage.getItem(SELECTED_SKIN_KEY) || 'classic';
 let frameCount = 0;
@@ -252,22 +290,7 @@ const bird = {
     ctx.ellipse(-6, wingY, 12, 7, -0.2, 0, Math.PI * 2);
     ctx.fill();
 
-    if (skin.hasHat) {
-      ctx.fillStyle = '#d35400';
-      ctx.fillRect(-6, -22, 28, 7);
-      ctx.beginPath();
-      ctx.moveTo(-4, -20);
-      ctx.lineTo(20, -20);
-      ctx.lineTo(14, -10);
-      ctx.lineTo(2, -10);
-      ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = '#f39c12';
-      ctx.fillRect(6, -31, 12, 10);
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(8, -29, 3, 3);
-      ctx.fillRect(16, -29, 3, 3);
-    }
+    drawHat(skin.hatStyle);
 
     // Eye (white)
     ctx.fillStyle = '#fff';
@@ -340,6 +363,71 @@ function getSelectedSkin() {
   return SKINS[selectedSkin] || SKINS.classic;
 }
 
+function drawHat(style) {
+  if (!style) return;
+
+  if (style === 'hat') {
+    ctx.fillStyle = '#d35400';
+    ctx.fillRect(-6, -22, 28, 7);
+    ctx.beginPath();
+    ctx.moveTo(-4, -20);
+    ctx.lineTo(20, -20);
+    ctx.lineTo(14, -10);
+    ctx.lineTo(2, -10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#f39c12';
+    ctx.fillRect(6, -31, 12, 10);
+    return;
+  }
+
+  if (style === 'cap') {
+    ctx.fillStyle = '#e63946';
+    ctx.beginPath();
+    ctx.arc(7, -15, 13, Math.PI, Math.PI * 2);
+    ctx.fill();
+    ctx.fillRect(-7, -16, 26, 5);
+    ctx.fillStyle = '#ff8993';
+    ctx.fillRect(13, -13, 12, 3);
+    return;
+  }
+
+  if (style === 'crown') {
+    ctx.fillStyle = '#f7c843';
+    ctx.beginPath();
+    ctx.moveTo(-8, -14);
+    ctx.lineTo(-5, -29);
+    ctx.lineTo(2, -21);
+    ctx.lineTo(8, -31);
+    ctx.lineTo(14, -21);
+    ctx.lineTo(20, -28);
+    ctx.lineTo(22, -14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#e74c3c';
+    ctx.beginPath();
+    ctx.arc(8, -19, 2, 0, Math.PI * 2);
+    ctx.fill();
+    return;
+  }
+
+  if (style === 'wizard') {
+    ctx.fillStyle = '#51349b';
+    ctx.beginPath();
+    ctx.moveTo(-8, -13);
+    ctx.lineTo(8, -38);
+    ctx.lineTo(23, -13);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#8e6bd1';
+    ctx.fillRect(-10, -15, 34, 6);
+    ctx.fillStyle = '#ffd166';
+    ctx.beginPath();
+    ctx.arc(8, -28, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
 function applyShopUpgrades() {
   bird.flapPower = -2.4;
   bird.gravity = 0.064;
@@ -359,8 +447,9 @@ function updateShopUI() {
       return;
     }
 
-    button.textContent = '50';
-    button.disabled = totalCoins < 50;
+    const cost = SKINS[key].cost || 50;
+    button.textContent = String(cost);
+    button.disabled = totalCoins < cost;
   });
 }
 
@@ -388,9 +477,10 @@ function buySkin(key) {
     return;
   }
 
-  if (totalCoins < 50) return;
+  const cost = SKINS[key].cost || 50;
+  if (totalCoins < cost) return;
 
-  totalCoins -= 50;
+  totalCoins -= cost;
   ownedSkins.push(key);
   selectedSkin = key;
   saveCoins();
@@ -405,9 +495,6 @@ function drawCoinHud() {
   const coinR = 12;
 
   ctx.save();
-  ctx.fillStyle = 'rgba(15, 22, 32, 0.5)';
-  ctx.fillRect(10, 10, 95, 34);
-
   ctx.beginPath();
   ctx.fillStyle = '#f5c542';
   ctx.arc(coinX + 10, coinY + 14, coinR, 0, Math.PI * 2);
