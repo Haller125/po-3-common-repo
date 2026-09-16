@@ -77,9 +77,96 @@ function triggerFlash(color = '#ffffff', intensity = 0.8) {
   flashAlpha = Math.max(flashAlpha, intensity);
 }
 
+// ── Difficulty Selection UI (Создается автоматически) ──
+let currentDifficulty = 1.0;
+const diffContainer = document.createElement('div');
+diffContainer.style.display = 'flex';
+diffContainer.style.justifyContent = 'center';
+diffContainer.style.gap = '8px';
+diffContainer.style.marginTop = '20px';
+diffContainer.style.zIndex = '100';
+
+const difficulties = [
+  { label: 'Легко', val: 1.0, color: '#4caf50' },
+  { label: 'Средне', val: 1.2, color: '#ff9800' },
+  { label: 'Сложно', val: 1.5, color: '#f44336' }
+];
+
+function setDifficulty(val) {
+  currentDifficulty = val;
+  PIPE_SPEED = 2.91 * val;
+  bird.gravity = 0.135 * val * val;
+  bird.flapPower = -3.5 * val;
+  
+  // Загружаем рекорд для выбранной сложности (для Легко берем старый рекорд, если есть)
+  bestScore = parseInt(localStorage.getItem(`flappyBest_${val}`) || (val === 1.0 ? localStorage.getItem('flappyBest') : null) || '0');
+  updateBestScoreUI();
+
+  // Визуальное обновление кнопок
+  Array.from(diffContainer.children).forEach(btn => {
+    if (parseFloat(btn.dataset.val) === val) {
+      btn.style.opacity = '1';
+      btn.style.transform = 'scale(1.08)';
+      btn.style.boxShadow = '0 0 10px rgba(255,255,255,0.5)';
+    } else {
+      btn.style.opacity = '0.5';
+      btn.style.transform = 'scale(1)';
+      btn.style.boxShadow = 'none';
+    }
+  });
+}
+
+difficulties.forEach(d => {
+  const btn = document.createElement('button');
+  btn.textContent = d.label;
+  btn.dataset.val = d.val;
+  btn.style.padding = '8px 12px';
+  btn.style.border = '2px solid #fff';
+  btn.style.borderRadius = '8px';
+  btn.style.backgroundColor = d.color;
+  btn.style.color = 'white';
+  btn.style.cursor = 'pointer';
+  btn.style.fontWeight = 'bold';
+  btn.style.fontSize = '14px';
+  btn.style.transition = 'all 0.2s';
+  btn.style.fontFamily = 'inherit';
+  
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setDifficulty(d.val);
+  });
+  
+  diffContainer.appendChild(btn);
+});
+
+if (startScreen) {
+  startScreen.appendChild(diffContainer);
+}
+
+
+// ── Day / Night Cycle Setup ──
+let dayCycleTime = 0; 
+const PALETTES = [
+  { top: [78, 197, 241], bot: [168, 230, 255] }, 
+  { top: [255, 126, 95], bot: [254, 180, 123] }, 
+  { top: [11, 29, 58],   bot: [26, 54, 93] }     
+];
+
+const stars = [];
+for (let i = 0; i < 40; i++) {
+  stars.push({
+    x: Math.random() * W,
+    y: Math.random() * (H - 80),
+    size: 0.5 + Math.random() * 1.5,
+    offset: Math.random() * 100 
+  });
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
 // ── Colors ──
-const SKY_TOP = '#4ec5f1';
-const SKY_BOT = '#a8e6ff';
 const GROUND_TOP = '#8bc34a';
 const GROUND_BOT = '#689f38';
 const GROUND_H = 80;
@@ -91,8 +178,8 @@ const bird = {
   w: 38,
   h: 28,
   vy: 0,
-  gravity: 0.064,
-  flapPower: -2.4,
+  gravity: 0.135,
+  flapPower: -3.5, 
   rotation: 0,
   flapFrame: 0,
   trail: [],
@@ -115,11 +202,9 @@ const bird = {
     this.y += this.vy;
     if (this.flapFrame > 0) this.flapFrame--;
 
-    // Rotation
-    const targetRot = Math.min(this.vy * 4, 90);
-    this.rotation += (targetRot - this.rotation) * 0.12;
+    const targetRot = Math.min(this.vy * (3.65 / currentDifficulty), 90);
+    this.rotation += (targetRot - this.rotation) * 0.11;
 
-    // Trail particles
     if (frameCount % 2 === 0) {
       this.trail.push({
         x: this.x,
@@ -129,15 +214,14 @@ const bird = {
       });
     }
     this.trail = this.trail.filter(p => {
-      p.alpha -= 0.03;
-      p.x -= 1.5;
+      p.alpha -= 0.035 * currentDifficulty;
+      p.x -= 1.73 * currentDifficulty;
       p.size *= 0.96;
       return p.alpha > 0;
     });
   },
 
   draw() {
-    // Trail
     this.trail.forEach(p => {
       ctx.globalAlpha = p.alpha * 0.5;
       ctx.fillStyle = '#ffe082';
@@ -162,7 +246,6 @@ const bird = {
     ctx.ellipse(0, 0, this.w / 2, this.h / 2, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Wing
     const wingY = this.flapFrame > 4 ? -8 : this.flapFrame > 0 ? -3 : 2;
     ctx.fillStyle = skin.wing;
     ctx.beginPath();
@@ -192,19 +275,16 @@ const bird = {
     ctx.arc(10, -5, 7, 0, Math.PI * 2);
     ctx.fill();
 
-    // Pupil
     ctx.fillStyle = '#222';
     ctx.beginPath();
     ctx.arc(12, -4, 3.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Eye shine
     ctx.fillStyle = '#fff';
     ctx.beginPath();
     ctx.arc(13.5, -6, 1.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Beak
     ctx.fillStyle = '#e74c3c';
     ctx.beginPath();
     ctx.moveTo(14, 0);
@@ -229,7 +309,7 @@ const bird = {
 // ── Pipes ──
 const PIPE_W = 62;
 const PIPE_GAP = 150;
-const PIPE_SPEED = 2.0;
+let PIPE_SPEED = 2.91; // Изменяется сложностью
 const PIPE_SPACING = 200;
 let pipes = [];
 
@@ -373,7 +453,6 @@ function drawPipe(pipe) {
   const capW = 8;
   const capH = 26;
 
-  // Top pipe
   const topGrad = ctx.createLinearGradient(pipe.x, 0, pipe.x + PIPE_W, 0);
   topGrad.addColorStop(0, '#3a9e3e');
   topGrad.addColorStop(0.3, '#5ec862');
@@ -382,21 +461,17 @@ function drawPipe(pipe) {
   ctx.fillStyle = topGrad;
   ctx.fillRect(pipe.x, 0, PIPE_W, topH);
 
-  // Top cap
   ctx.fillStyle = topGrad;
   ctx.beginPath();
   ctx.roundRect(pipe.x - capW/2, topH - capH, PIPE_W + capW, capH, [0, 0, 6, 6]);
   ctx.fill();
 
-  // Top pipe highlight
   ctx.fillStyle = 'rgba(255,255,255,0.12)';
   ctx.fillRect(pipe.x + 6, 0, 8, topH - capH);
 
-  // Top pipe shadow
   ctx.fillStyle = 'rgba(0,0,0,0.1)';
   ctx.fillRect(pipe.x + PIPE_W - 10, 0, 6, topH - capH);
 
-  // Bottom pipe
   const botGrad = ctx.createLinearGradient(pipe.x, 0, pipe.x + PIPE_W, 0);
   botGrad.addColorStop(0, '#3a9e3e');
   botGrad.addColorStop(0.3, '#5ec862');
@@ -405,16 +480,13 @@ function drawPipe(pipe) {
   ctx.fillStyle = botGrad;
   ctx.fillRect(pipe.x, botY, PIPE_W, botH);
 
-  // Bottom cap
   ctx.beginPath();
   ctx.roundRect(pipe.x - capW/2, botY, PIPE_W + capW, capH, [6, 6, 0, 0]);
   ctx.fill();
 
-  // Bottom pipe highlight
   ctx.fillStyle = 'rgba(255,255,255,0.12)';
   ctx.fillRect(pipe.x + 6, botY + capH, 8, botH - capH);
 
-  // Bottom pipe shadow
   ctx.fillStyle = 'rgba(0,0,0,0.1)';
   ctx.fillRect(pipe.x + PIPE_W - 10, botY + capH, 6, botH - capH);
 }
@@ -430,24 +502,62 @@ for (let i = 0; i < 6; i++) {
     y: 40 + Math.random() * 180,
     w: 60 + Math.random() * 80,
     h: 25 + Math.random() * 20,
-    speed: 0.16 + Math.random() * 0.32,
+    baseSpeed: 0.23 + Math.random() * 0.46, // Базовая скорость
     alpha: 0.3 + Math.random() * 0.4
   });
 }
 
+function updateEnvironment() {
+  clouds.forEach(c => {
+    if (state === STATES.PLAYING) c.x -= c.baseSpeed * currentDifficulty;
+    if (c.x + c.w < -20) c.x = W + 40;
+  });
+
+  if (state === STATES.PLAYING) groundOffsetX = (groundOffsetX + PIPE_SPEED) % 24;
+}
+
 function drawBackground() {
-  // Sky gradient
+  let phase = (dayCycleTime % 1.0) * 3;
+  let index = Math.floor(phase); 
+  let t = phase - index; 
+  let blend = t > 0.5 ? (t - 0.5) * 2 : 0; 
+
+  let c1 = PALETTES[index];
+  let c2 = PALETTES[(index + 1) % 3];
+
+  let topR = Math.round(lerp(c1.top[0], c2.top[0], blend));
+  let topG = Math.round(lerp(c1.top[1], c2.top[1], blend));
+  let topB = Math.round(lerp(c1.top[2], c2.top[2], blend));
+
+  let botR = Math.round(lerp(c1.bot[0], c2.bot[0], blend));
+  let botG = Math.round(lerp(c1.bot[1], c2.bot[1], blend));
+  let botB = Math.round(lerp(c1.bot[2], c2.bot[2], blend));
+
   const skyGrad = ctx.createLinearGradient(0, 0, 0, H - GROUND_H);
-  skyGrad.addColorStop(0, SKY_TOP);
-  skyGrad.addColorStop(1, SKY_BOT);
+  skyGrad.addColorStop(0, `rgb(${topR}, ${topG}, ${topB})`);
+  skyGrad.addColorStop(1, `rgb(${botR}, ${botG}, ${botB})`);
   ctx.fillStyle = skyGrad;
   ctx.fillRect(0, 0, W, H - GROUND_H);
 
-  // Clouds
-  clouds.forEach(c => {
-    if (state === STATES.PLAYING) c.x -= c.speed;
-    if (c.x + c.w < -20) c.x = W + 40;
+  let starAlpha = 0;
+  if (index === 1) starAlpha = blend; 
+  else if (index === 2) starAlpha = 1 - blend; 
 
+  if (starAlpha > 0) {
+    stars.forEach(s => {
+      let a = starAlpha * (0.3 + 0.7 * Math.sin(dayCycleTime * 50 + s.offset));
+      if (a < 0) a = 0;
+      
+      ctx.globalAlpha = a;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  clouds.forEach(c => {
     ctx.globalAlpha = c.alpha;
     ctx.fillStyle = '#fff';
     ctx.beginPath();
@@ -464,11 +574,7 @@ function drawBackground() {
 }
 
 function drawGround() {
-  if (state === STATES.PLAYING) groundOffsetX = (groundOffsetX + PIPE_SPEED) % 24;
-
   const gy = H - GROUND_H;
-
-  // Ground body
   const groundGrad = ctx.createLinearGradient(0, gy, 0, H);
   groundGrad.addColorStop(0, GROUND_TOP);
   groundGrad.addColorStop(0.15, '#7cb342');
@@ -477,18 +583,15 @@ function drawGround() {
   ctx.fillStyle = groundGrad;
   ctx.fillRect(0, gy, W, GROUND_H);
 
-  // Ground stripe pattern
   ctx.fillStyle = 'rgba(0,0,0,0.06)';
   for (let i = -1; i < W / 24 + 2; i++) {
     const sx = i * 24 - groundOffsetX;
     ctx.fillRect(sx, gy + 14, 12, GROUND_H - 14);
   }
 
-  // Grass top edge
   ctx.fillStyle = '#9ccc65';
   ctx.fillRect(0, gy, W, 4);
 
-  // Grass tufts
   ctx.fillStyle = '#7cb342';
   for (let i = -1; i < W / 12 + 2; i++) {
     const tx = i * 12 - groundOffsetX * 0.5;
@@ -535,8 +638,8 @@ function updateParticles() {
   particles = particles.filter(p => {
     p.x += p.vx;
     p.y += p.vy;
-    p.vy += 0.1;
-    p.alpha -= 0.02;
+    p.vy += 0.135 * currentDifficulty * currentDifficulty;
+    p.alpha -= 0.023 * currentDifficulty;
     p.size *= 0.97;
     return p.alpha > 0;
   });
@@ -558,21 +661,15 @@ function checkCollision() {
   const b = bird.getBounds();
   const groundY = H - GROUND_H;
 
-  // Ground / ceiling
   if (b.y + b.h > groundY || b.y < 0) return true;
 
-  // Pipes
   for (const pipe of pipes) {
     const botY = pipe.topH + PIPE_GAP;
     const capW = 8;
 
-    // Top pipe body
     if (rectsOverlap(b, { x: pipe.x, y: 0, w: PIPE_W, h: pipe.topH })) return true;
-    // Top cap
     if (rectsOverlap(b, { x: pipe.x - capW/2, y: pipe.topH - 26, w: PIPE_W + capW, h: 26 })) return true;
-    // Bottom pipe body
     if (rectsOverlap(b, { x: pipe.x, y: botY, w: PIPE_W, h: H - GROUND_H - botY })) return true;
-    // Bottom cap
     if (rectsOverlap(b, { x: pipe.x - capW/2, y: botY, w: PIPE_W + capW, h: 26 })) return true;
   }
   return false;
@@ -582,10 +679,9 @@ function rectsOverlap(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 }
 
-// ── Screen Shake ──
+// ── Game Actions ──
 let shakeAmount = 0;
 
-// ── Game Actions ──
 function startGame() {
   state = STATES.PLAYING;
   score = 0;
@@ -618,7 +714,8 @@ function gameOver() {
 
   if (score > bestScore) {
     bestScore = score;
-    localStorage.setItem('flappyBest', bestScore);
+    localStorage.setItem(`flappyBest_${currentDifficulty}`, bestScore);
+    if (currentDifficulty === 1.0) localStorage.setItem('flappyBest', bestScore); // Legacy compat
     updateBestScoreUI();
   }
 
@@ -629,7 +726,6 @@ function gameOver() {
     finalScoreEl.textContent = `Score: ${score}`;
     bestScoreEl.textContent = `Best: ${bestScore}`;
 
-    // Medal
     if (score >= 40) medalEl.textContent = '🏆';
     else if (score >= 20) medalEl.textContent = '🥇';
     else if (score >= 10) medalEl.textContent = '🥈';
@@ -644,8 +740,6 @@ function handleFlap() {
     bird.flap();
   } else if (state === STATES.PLAYING) {
     bird.flap();
-  } else if (state === STATES.DEAD) {
-    // Allow restart after a short delay
   }
 }
 
@@ -706,42 +800,33 @@ document.querySelectorAll('.shop-buy').forEach(button => {
 loadShopState();
 showMainMenu();
 applyShopUpgrades();
+// Инициализация при загрузке
+setDifficulty(1.0); 
 updateBestScoreUI();
 updateShopUI();
 
-// ── Menu Animation ──
-let menuBobTime = 0;
+// ── Logic Loop (Fixed Timestep) ──
+let menuBobTime = 0; 
 
-// ── Main Loop ──
-function gameLoop() {
+function updateLogic() {
   frameCount++;
-  ctx.clearRect(0, 0, W, H);
-
-  // Screen shake offset
-  let shakeX = 0, shakeY = 0;
+  dayCycleTime += 0.0002 * currentDifficulty; 
+  
   if (shakeAmount > 0) {
-    shakeX = (Math.random() - 0.5) * shakeAmount;
-    shakeY = (Math.random() - 0.5) * shakeAmount;
     shakeAmount *= 0.85;
     if (shakeAmount < 0.5) shakeAmount = 0;
   }
 
-  ctx.save();
-  ctx.translate(shakeX, shakeY);
-
-  drawBackground();
+  updateEnvironment();
 
   if (state === STATES.MENU) {
-    // Bob the bird on menu
-    menuBobTime += 0.04;
+    menuBobTime += 0.047 * currentDifficulty; 
     bird.y = H / 2 + Math.sin(menuBobTime) * 15;
     bird.flapFrame = Math.sin(menuBobTime * 3) > 0 ? 6 : 0;
     bird.rotation = 0;
-    bird.draw();
   }
 
   if (state === STATES.PLAYING) {
-    // Update bird
     bird.update();
 
     // Update pipes
@@ -751,7 +836,6 @@ function gameLoop() {
     });
     pipes = pipes.filter(p => p.x + PIPE_W > -20);
 
-    // Spawn pipes
     const lastPipe = pipes[pipes.length - 1];
     if (!lastPipe || lastPipe.x < W - PIPE_SPACING) {
       spawnPipe();
@@ -765,7 +849,6 @@ function gameLoop() {
         scoreDisplay.textContent = score;
         scoreDisplay.classList.add('pop');
         setTimeout(() => scoreDisplay.classList.remove('pop'), 100);
-        triggerFlash('#fff2a8', 0.5);
         spawnScoreParticle();
       }
 
@@ -835,19 +918,13 @@ function gameLoop() {
 
     // Particles
     updateParticles();
-    drawParticles();
 
-    // Collision
     if (checkCollision()) {
       gameOver();
     }
   }
 
   if (state === STATES.DEAD) {
-    // Still draw pipes
-    pipes.forEach(drawPipe);
-
-    // Bird falls
     bird.vy += bird.gravity;
     bird.y += bird.vy;
     bird.rotation = 90;
@@ -855,22 +932,78 @@ function gameLoop() {
       bird.y = H - GROUND_H - bird.h / 2;
       bird.vy = 0;
     }
-    bird.draw();
-
     updateParticles();
+  }
+}
+
+// ── Main Loop ──
+let lastTime = performance.now();
+let accumulator = 0;
+const TIME_STEP = 1000 / 60;
+
+function gameLoop(timestamp) {
+  let deltaTime = timestamp - lastTime;
+  lastTime = timestamp;
+
+  if (deltaTime > 250) deltaTime = 250;
+  accumulator += deltaTime;
+
+  while (accumulator >= TIME_STEP) {
+    updateLogic();
+    accumulator -= TIME_STEP;
+  }
+
+  // Отрисовка
+  ctx.clearRect(0, 0, W, H);
+  
+  let shakeX = 0, shakeY = 0;
+  if (shakeAmount > 0) {
+    shakeX = (Math.random() - 0.5) * shakeAmount;
+    shakeY = (Math.random() - 0.5) * shakeAmount;
+  }
+
+  ctx.save();
+  ctx.translate(shakeX, shakeY);
+
+  drawBackground();
+  
+  if (state === STATES.MENU || state === STATES.PLAYING) {
+    pipes.forEach(drawPipe);
+    bird.draw();
+    if (state === STATES.PLAYING) drawParticles();
+  }
+
+  if (state === STATES.DEAD) {
+    pipes.forEach(drawPipe);
+    bird.draw();
     drawParticles();
   }
 
   drawGround();
   drawCoinHud();
 
+  let phase = (dayCycleTime % 1.0) * 3;
+  let index = Math.floor(phase);
+  let t = phase - index;
+  let blend = t > 0.5 ? (t - 0.5) * 2 : 0;
+  
+  let darkness = 0;
+  if (index === 1) darkness = blend * 0.45; 
+  else if (index === 2) darkness = 0.45 - (blend * 0.45); 
+  
+  if (darkness > 0) {
+    ctx.fillStyle = `rgba(11, 29, 58, ${darkness})`;
+    ctx.fillRect(0, 0, W, H);
+  }
+
   if (flashAlpha > 0) {
     ctx.fillStyle = flashColor;
     ctx.globalAlpha = flashAlpha;
     ctx.fillRect(0, 0, W, H);
-    ctx.globalAlpha = 1;
-    flashAlpha *= 0.72;
-    if (flashAlpha < 0.02) flashAlpha = 0;
+    ctx.globalAlpha = 1.0;
+    
+    flashAlpha -= 0.05; 
+    if (flashAlpha < 0) flashAlpha = 0;
   }
 
   ctx.restore();
@@ -878,4 +1011,5 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-gameLoop();
+// Запускаем игру
+requestAnimationFrame(gameLoop);
