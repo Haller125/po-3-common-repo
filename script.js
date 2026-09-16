@@ -46,8 +46,8 @@ const bird = {
   w: 38,
   h: 28,
   vy: 0,
-  gravity: 0.1,
-  flapPower: -3.0,
+  gravity: 0.064,
+  flapPower: -2.4,
   rotation: 0,
   flapFrame: 0,
   trail: [],
@@ -165,7 +165,7 @@ const bird = {
 // ── Pipes ──
 const PIPE_W = 62;
 const PIPE_GAP = 150;
-const PIPE_SPEED = 2.5;
+const PIPE_SPEED = 2.0;
 const PIPE_SPACING = 200;
 let pipes = [];
 
@@ -244,7 +244,7 @@ for (let i = 0; i < 6; i++) {
     y: 40 + Math.random() * 180,
     w: 60 + Math.random() * 80,
     h: 25 + Math.random() * 20,
-    speed: 0.2 + Math.random() * 0.4,
+    speed: 0.16 + Math.random() * 0.32,
     alpha: 0.3 + Math.random() * 0.4
   });
 }
