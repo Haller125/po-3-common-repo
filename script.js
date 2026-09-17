@@ -98,12 +98,6 @@ let state = STATES.MENU;
 let score = 0;
 let bestScore = parseInt(localStorage.getItem('flappyBest') || '0');
 let totalCoins = parseInt(localStorage.getItem('flappyCoins') || '0');
-const BONUS_COINS_KEY = 'flappyBonus999Granted';
-if (!localStorage.getItem(BONUS_COINS_KEY)) {
-  totalCoins += 999;
-  localStorage.setItem('flappyCoins', String(totalCoins));
-  localStorage.setItem(BONUS_COINS_KEY, 'true');
-}
 let ownedSkins = ['classic'];
 let selectedSkin = localStorage.getItem(SELECTED_SKIN_KEY) || 'classic';
 let frameCount = 0;
@@ -205,6 +199,8 @@ function lerp(a, b, t) {
 }
 
 // ── Colors ──
+const SKY_TOP = '#4ec5f1';
+const SKY_BOT = '#a8e6ff';
 const GROUND_TOP = '#8bc34a';
 const GROUND_BOT = '#689f38';
 const GROUND_H = 80;
@@ -243,6 +239,7 @@ const bird = {
     const targetRot = Math.min(this.vy * (3.65 / currentDifficulty), 90);
     this.rotation += (targetRot - this.rotation) * 0.11;
 
+    // Trail particles
     if (frameCount % 2 === 0) {
       this.trail.push({
         x: this.x,
@@ -260,6 +257,7 @@ const bird = {
   },
 
   draw() {
+    // Trail
     this.trail.forEach(p => {
       ctx.globalAlpha = p.alpha * 0.5;
       ctx.fillStyle = '#ffe082';
@@ -284,6 +282,7 @@ const bird = {
     ctx.ellipse(0, 0, this.w / 2, this.h / 2, 0, 0, Math.PI * 2);
     ctx.fill();
 
+    // Wing
     const wingY = this.flapFrame > 4 ? -8 : this.flapFrame > 0 ? -3 : 2;
     ctx.fillStyle = skin.wing;
     ctx.beginPath();
@@ -298,16 +297,19 @@ const bird = {
     ctx.arc(10, -5, 7, 0, Math.PI * 2);
     ctx.fill();
 
+    // Pupil
     ctx.fillStyle = '#222';
     ctx.beginPath();
     ctx.arc(12, -4, 3.5, 0, Math.PI * 2);
     ctx.fill();
 
+    // Eye shine
     ctx.fillStyle = '#fff';
     ctx.beginPath();
     ctx.arc(13.5, -6, 1.5, 0, Math.PI * 2);
     ctx.fill();
 
+    // Beak
     ctx.fillStyle = '#e74c3c';
     ctx.beginPath();
     ctx.moveTo(14, 0);
@@ -540,6 +542,7 @@ function drawPipe(pipe) {
   const capW = 8;
   const capH = 26;
 
+  // Top pipe
   const topGrad = ctx.createLinearGradient(pipe.x, 0, pipe.x + PIPE_W, 0);
   topGrad.addColorStop(0, '#3a9e3e');
   topGrad.addColorStop(0.3, '#5ec862');
@@ -548,17 +551,21 @@ function drawPipe(pipe) {
   ctx.fillStyle = topGrad;
   ctx.fillRect(pipe.x, 0, PIPE_W, topH);
 
+  // Top cap
   ctx.fillStyle = topGrad;
   ctx.beginPath();
   ctx.roundRect(pipe.x - capW/2, topH - capH, PIPE_W + capW, capH, [0, 0, 6, 6]);
   ctx.fill();
 
+  // Top pipe highlight
   ctx.fillStyle = 'rgba(255,255,255,0.12)';
   ctx.fillRect(pipe.x + 6, 0, 8, topH - capH);
 
+  // Top pipe shadow
   ctx.fillStyle = 'rgba(0,0,0,0.1)';
   ctx.fillRect(pipe.x + PIPE_W - 10, 0, 6, topH - capH);
 
+  // Bottom pipe
   const botGrad = ctx.createLinearGradient(pipe.x, 0, pipe.x + PIPE_W, 0);
   botGrad.addColorStop(0, '#3a9e3e');
   botGrad.addColorStop(0.3, '#5ec862');
@@ -567,15 +574,56 @@ function drawPipe(pipe) {
   ctx.fillStyle = botGrad;
   ctx.fillRect(pipe.x, botY, PIPE_W, botH);
 
+  // Bottom cap
   ctx.beginPath();
   ctx.roundRect(pipe.x - capW/2, botY, PIPE_W + capW, capH, [6, 6, 0, 0]);
   ctx.fill();
 
+  // Bottom pipe highlight
   ctx.fillStyle = 'rgba(255,255,255,0.12)';
   ctx.fillRect(pipe.x + 6, botY + capH, 8, botH - capH);
 
+  // Bottom pipe shadow
   ctx.fillStyle = 'rgba(0,0,0,0.1)';
   ctx.fillRect(pipe.x + PIPE_W - 10, botY + capH, 6, botH - capH);
+}
+
+function drawCoin(coin) {
+  if (!coin || coin.collected) return;
+
+  const pipe = pipes.find(item => item.coin === coin);
+  if (!pipe) return;
+
+  const x = pipe.x + PIPE_W / 2;
+  const bob = Math.sin((frameCount + x) * 0.12 + coin.phase) * 3;
+  const colors = {
+    gold: { main: '#ffd54a', inner: '#fff1a8', outline: 'rgba(124, 92, 0, 0.7)' },
+    silver: { main: '#dfe8f7', inner: '#ffffff', outline: 'rgba(85, 104, 130, 0.7)' },
+    diamond: { main: '#73e7ff', inner: '#effcff', outline: 'rgba(24, 90, 128, 0.7)' }
+  };
+  const color = colors[coin.type] || colors.gold;
+  const y = coin.y + bob;
+
+  ctx.beginPath();
+  ctx.fillStyle = color.main;
+  ctx.arc(x, y, coin.r, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.fillStyle = color.inner;
+  ctx.arc(x - coin.r * 0.28, y - coin.r * 0.2, coin.r * 0.28, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.strokeStyle = color.outline;
+  ctx.lineWidth = 2;
+  ctx.arc(x, y, coin.r, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  ctx.arc(x + coin.r * 0.15, y - coin.r * 0.15, 2.2, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 // ── Background ──
@@ -645,6 +693,9 @@ function drawBackground() {
   }
 
   clouds.forEach(c => {
+    if (state === STATES.PLAYING) c.x -= c.speed;
+    if (c.x + c.w < -20) c.x = W + 40;
+
     ctx.globalAlpha = c.alpha;
     ctx.fillStyle = '#fff';
     ctx.beginPath();
@@ -661,7 +712,11 @@ function drawBackground() {
 }
 
 function drawGround() {
+  if (state === STATES.PLAYING) groundOffsetX = (groundOffsetX + PIPE_SPEED) % 24;
+
   const gy = H - GROUND_H;
+
+  // Ground body
   const groundGrad = ctx.createLinearGradient(0, gy, 0, H);
   groundGrad.addColorStop(0, GROUND_TOP);
   groundGrad.addColorStop(0.15, '#7cb342');
@@ -670,15 +725,18 @@ function drawGround() {
   ctx.fillStyle = groundGrad;
   ctx.fillRect(0, gy, W, GROUND_H);
 
+  // Ground stripe pattern
   ctx.fillStyle = 'rgba(0,0,0,0.06)';
   for (let i = -1; i < W / 24 + 2; i++) {
     const sx = i * 24 - groundOffsetX;
     ctx.fillRect(sx, gy + 14, 12, GROUND_H - 14);
   }
 
+  // Grass top edge
   ctx.fillStyle = '#9ccc65';
   ctx.fillRect(0, gy, W, 4);
 
+  // Grass tufts
   ctx.fillStyle = '#7cb342';
   for (let i = -1; i < W / 12 + 2; i++) {
     const tx = i * 12 - groundOffsetX * 0.5;
@@ -748,15 +806,21 @@ function checkCollision() {
   const b = bird.getBounds();
   const groundY = H - GROUND_H;
 
+  // Ground / ceiling
   if (b.y + b.h > groundY || b.y < 0) return true;
 
+  // Pipes
   for (const pipe of pipes) {
     const botY = pipe.topH + PIPE_GAP;
     const capW = 8;
 
+    // Top pipe body
     if (rectsOverlap(b, { x: pipe.x, y: 0, w: PIPE_W, h: pipe.topH })) return true;
+    // Top cap
     if (rectsOverlap(b, { x: pipe.x - capW/2, y: pipe.topH - 26, w: PIPE_W + capW, h: 26 })) return true;
+    // Bottom pipe body
     if (rectsOverlap(b, { x: pipe.x, y: botY, w: PIPE_W, h: H - GROUND_H - botY })) return true;
+    // Bottom cap
     if (rectsOverlap(b, { x: pipe.x - capW/2, y: botY, w: PIPE_W + capW, h: 26 })) return true;
   }
   return false;
@@ -769,6 +833,7 @@ function rectsOverlap(a, b) {
 // ── Game Actions ──
 let shakeAmount = 0;
 
+// ── Game Actions ──
 function startGame() {
   state = STATES.PLAYING;
   score = 0;
@@ -813,6 +878,7 @@ function gameOver() {
     finalScoreEl.textContent = `Score: ${score}`;
     bestScoreEl.textContent = `Best: ${bestScore}`;
 
+    // Medal
     if (score >= 40) medalEl.textContent = '🏆';
     else if (score >= 20) medalEl.textContent = '🥇';
     else if (score >= 10) medalEl.textContent = '🥈';
@@ -827,6 +893,8 @@ function handleFlap() {
     bird.flap();
   } else if (state === STATES.PLAYING) {
     bird.flap();
+  } else if (state === STATES.DEAD) {
+    // Allow restart after a short delay
   }
 }
 
@@ -893,27 +961,36 @@ updateBestScoreUI();
 updateShopUI();
 
 // ── Logic Loop (Fixed Timestep) ──
-let menuBobTime = 0; 
+let menuBobTime = 0;
 
 function updateLogic() {
   frameCount++;
   dayCycleTime += 0.0002 * currentDifficulty; 
-  
+
+  // Screen shake offset
+  let shakeX = 0, shakeY = 0;
   if (shakeAmount > 0) {
+    shakeX = (Math.random() - 0.5) * shakeAmount;
+    shakeY = (Math.random() - 0.5) * shakeAmount;
     shakeAmount *= 0.85;
     if (shakeAmount < 0.5) shakeAmount = 0;
   }
 
-  updateEnvironment();
+  ctx.save();
+  ctx.translate(shakeX, shakeY);
+
+  drawBackground();
 
   if (state === STATES.MENU) {
     menuBobTime += 0.047 * currentDifficulty; 
     bird.y = H / 2 + Math.sin(menuBobTime) * 15;
     bird.flapFrame = Math.sin(menuBobTime * 3) > 0 ? 6 : 0;
     bird.rotation = 0;
+    bird.draw();
   }
 
   if (state === STATES.PLAYING) {
+    // Update bird
     bird.update();
 
     // Update pipes
@@ -923,6 +1000,7 @@ function updateLogic() {
     });
     pipes = pipes.filter(p => p.x + PIPE_W > -20);
 
+    // Spawn pipes
     const lastPipe = pipes[pipes.length - 1];
     if (!lastPipe || lastPipe.x < W - PIPE_SPACING) {
       spawnPipe();
@@ -936,11 +1014,13 @@ function updateLogic() {
         scoreDisplay.textContent = score;
         scoreDisplay.classList.add('pop');
         setTimeout(() => scoreDisplay.classList.remove('pop'), 100);
+        triggerFlash('#fff2a8', 0.5);
         spawnScoreParticle();
       }
 
       if (p.coin && !p.coin.collected) {
-        const dx = Math.abs(bird.x - p.coin.x);
+        const coinX = p.x + PIPE_W / 2;
+        const dx = Math.abs(bird.x - coinX);
         const dy = Math.abs(bird.y - p.coin.y);
         if (dx < bird.w * 0.45 + p.coin.r && dy < bird.h * 0.45 + p.coin.r) {
           p.coin.collected = true;
@@ -1005,13 +1085,20 @@ function updateLogic() {
 
     // Particles
     updateParticles();
+    drawParticles();
 
+    // Collision
     if (checkCollision()) {
       gameOver();
     }
   }
 
   if (state === STATES.DEAD) {
+    // Still draw pipes
+    pipes.forEach(drawPipe);
+    pipes.forEach(p => drawCoin(p.coin));
+
+    // Bird falls
     bird.vy += bird.gravity;
     bird.y += bird.vy;
     bird.rotation = 90;
